@@ -12,11 +12,11 @@ module.exports = agent => {
 
   class RabbitMQStrategy extends agent.ScheduleStrategy {
     start() {
-      const { schedule: { client, queue: queueName, worker } } = this;
+      const { schedule: { client, exchange, queue: queueName, worker } } = this;
       if (worker === 'all') {
-        this.sendAll({ queueName, client });
+        this.sendAll({ exchange, queueName, client });
       } else if (worker === 'one') {
-        this.sendOne({ queueName, client });
+        this.sendOne({ exchange, queueName, client });
       } else {
         throw new Error(`[egg-rabbitmq] unknow worker type ${worker}`);
       }
