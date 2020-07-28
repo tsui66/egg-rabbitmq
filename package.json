@@ -10,7 +10,9 @@
     "eggPlugin",
     "egg-plugin"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "amqplib": "^0.6.0"
+  },
   "devDependencies": {
     "autod": "^3.0.1",
     "autod-egg": "^1.1.0",
@@ -34,7 +36,10 @@
     "test-local": "egg-bin test"
   },
   "files": [
-    "config"
+    "config",
+    "agent.js",
+    "lib",
+    "app.js"
   ],
   "ci": {
     "version": "8, 9"
