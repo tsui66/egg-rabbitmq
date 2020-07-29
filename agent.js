@@ -11,15 +11,26 @@ module.exports = agent => {
   }
 
   class RabbitMQStrategy extends agent.ScheduleStrategy {
-    start() {
-      const { schedule } = this;
-      if (schedule.worker === 'all') {
-        this.sendAll(schedule);
-      } else if (schedule.worker === 'one') {
-        this.sendOne(schedule);
-      } else {
-        throw new Error(`[egg-rabbitmq] unknow worker type ${schedule.worker}`);
-      }
+    async start() {
+      const { schedule: { exchange, queue: queueName, worker } } = this;
+      const ch = await agent.rabbitmq.createChannel();
+      await ch.assertExchange(exchange, 'direct', {
+        durable: false,
+      });
+      const _queueName = queueName || agent.config.rabbitmq.queueName;
+      await ch.assertQueue(_queueName, { durable: false });
+      ch.consume(_queueName, msg => {
+        if (worker === 'all') {
+          this.sendAll({ schedule: this.schedule, msg, ackEvent: 'rabbitmq_ack' });
+        } else if (worker === 'one') {
+          this.sendOne({ schedule: this.schedule, msg, ackEvent: 'rabbitmq_ack' });
+        } else {
+          throw new Error(`[egg-rabbitmq] unknow worker type ${worker}`);
+        }
+      });
+      agent.messenger.on('rabbitmq_ack', data => {
+        ch.ack(data);
+      });
     }
   }
 
