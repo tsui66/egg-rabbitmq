@@ -28,8 +28,11 @@ module.exports = agent => {
           throw new Error(`[egg-rabbitmq] unknow worker type ${worker}`);
         }
       });
-      agent.messenger.on('rabbitmq_ack', data => {
-        ch.ack(data);
+      agent.messenger.on('rabbitmq_ack', payload => {
+        if (payload && payload.emitter) {
+          agent.messenger.sendToApp(payload.emitter, payload.data || {});
+        }
+        ch.ack(payload.msg);
       });
     }
   }
